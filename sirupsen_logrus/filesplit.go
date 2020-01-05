@@ -35,6 +35,10 @@ func (self *Output) init() {
     self.maxSize = self.config.MaxSizeKb * 1024
 }
 
+func (self *Output) SetRoot(root string) {
+    self.root = root
+}
+
 func (self *Output) Write(data []byte) (int, error) {
     /*
     ** 获取日期
@@ -53,9 +57,6 @@ func (self *Output) Write(data []byte) (int, error) {
     }
     fullDir.WriteString(t)
     full := fullDir.String()
-    if !self.isExist(&full) {
-        os.MkdirAll(full, os.ModePerm)
-    }
     /*
     ** 打开编号最大的文件
     */
@@ -144,6 +145,12 @@ func (self *Output) openFile(dir *string) error {
     */
     if self.config.RemainDays > 0 {
         go self.checkAndDelDateDir()
+    }
+    /*
+    ** 当日期变更的时候, 检测目录是否存在, 如果不存在就创建
+    */
+    if !self.isExist(dir) {
+        os.MkdirAll(*dir, os.ModePerm)
     }
     self.curDir = *dir
     files, err := ioutil.ReadDir(*dir)

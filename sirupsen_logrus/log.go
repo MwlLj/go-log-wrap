@@ -15,13 +15,7 @@ type CLog struct {
     outputer *Output
 }
 
-func (self *CLog) init(root string) error {
-    if !isExist(root) {
-        err := os.MkdirAll(root, os.ModePerm)
-        if err != nil {
-            return err
-        }
-    }
+func (self *CLog) init() {
     // self.log.SetFormatter(&logrus.JSONFormatter{
     //     PrettyPrint: false,
     // })
@@ -29,7 +23,6 @@ func (self *CLog) init(root string) error {
         TimestampFormat: "2006-01-02 15:04:05",
     })
     self.log.SetOutput(self.outputer)
-    return nil
 }
 
 func isExist(name string) bool {
@@ -51,14 +44,15 @@ func (self *CLog) Logger() *logrus.Logger {
     return self.log
 }
 
-func NewLog(root string, config *Config) (*CLog, error) {
+func (self *CLog) SetRoot(root string) {
+    self.outputer.SetRoot(root)
+}
+
+func NewLog(root string, config *Config) *CLog {
     l := CLog{
         log: logrus.New(),
         outputer: NewOutput(root, config),
     }
-    err := l.init(root)
-    if err != nil {
-        return nil, err
-    }
-    return &l, nil
+    l.init()
+    return &l
 }
