@@ -29,10 +29,13 @@ type Output struct {
     curDir string
     curFile *os.File
     maxSize int64
+    remainDays int
 }
 
 func (self *Output) init() {
     self.maxSize = self.config.MaxSizeKb * 1024
+    self.remainDays = self.config.RemainDays
+    go self.checkAndDelDateDir()
 }
 
 func (self *Output) SetRoot(root string) {
@@ -94,7 +97,7 @@ func (self *Output) checkAndDelDateDir() {
             timeUnix := time.Now().Unix()
             sub := time.Unix(timeUnix, 0).Sub(old)
             days := int(sub.Hours()/24)
-            if (days < (self.config.RemainDays+1)) && (days > 0) {
+            if (days < (self.remainDays+1)) && (days > 0) {
             } else if days == 0 {
             } else {
                 os.RemoveAll(pa.Join(self.root, file.Name()))
@@ -143,7 +146,7 @@ func (self *Output) openFile(dir *string) error {
     /*
     ** 当日期变更的时候, 检测一下是否需要删除存在已久的目录
     */
-    if self.config.RemainDays > 0 {
+    if self.remainDays > 0 {
         go self.checkAndDelDateDir()
     }
     /*
